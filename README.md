@@ -543,3 +543,22 @@ python gen_judgment.py --mode pairwise-all --model-list [LIST-OF-MODEL-ID] --par
 ```bash
 python show_result.py --mode pairwise-all
 ```
+
+### Evaluate a custom model on custom bench
+
+#### Step 1. Download or save the custom bench question to the following location
+
+[Question Format](https://github.com/lm-sys/FastChat/blob/main/fastchat/llm_judge/data/mt_bench/question.jsonl "format")
+
+```bash
+data/allam_bench/question.jsonl
+```
+
+#### Step 2. Generate model answers to custom bench questions
+```bash
+python gen_model_answer.py \
+        --model-path /models/allam-13b \
+        --model-id allam-13b \
+        --bench-name allam_bench
+```
+The answers will be saved to `data/allam_bench/model_answer/[MODEL-ID].jsonl`.
