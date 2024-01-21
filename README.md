@@ -130,31 +130,36 @@ python3 -m fastchat.serve.gradio_web_server
 
 The following will be the output GUI
 
-<a href="/"><img src="assets/demo_narrow.gif" width="70%"></a>
+`<a href="/"><img src="assets/demo_narrow.gif" width="70%">``</a>`
 
 > The above command will only only open `Single Tab` GUI
 
 #### Launch the Gradio web server for multi tab (battle, arena, etc)
+
 ```bash
 python3 -m fastchat.serve.gradio_web_server_multi
 ```
 
 ## vLLM Integration
+
 [vLLM](https://vllm.ai/) can be used as an optimized worker implementation in FastChat.
 It offers advanced continuous batching and a much higher (~10x) throughput.
 
 ### Instructions
-1. Install vLLM.
-    ```
-    pip install vllm
-    ```
 
+1. Install vLLM.
+
+   ```
+   pip install vllm
+   ```
 2. When you launch a model worker, replace the normal worker (`fastchat.serve.model_worker`) with the vLLM worker (`fastchat.serve.vllm_worker`). All other commands such as controller, gradio web server, and OpenAI API server are kept the same.
+
    ```
    python3 -m fastchat.serve.vllm_worker --model-path lmsys/vicuna-7b-v1.5
    ```
 
    If you see tokenizer errors, try
+
    ```
    python3 -m fastchat.serve.vllm_worker --model-path lmsys/vicuna-7b-v1.5 --tokenizer hf-internal-testing/llama-tokenizer
    ```
@@ -165,6 +170,7 @@ It offers advanced continuous batching and a much higher (~10x) throughput.
    '''
 
 ## OpenAI API Server
+
 First, launch the controller
 
 ```bash
@@ -184,12 +190,15 @@ python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
 ### Testing the OpenAI API Server
+
 First, install OpenAI python package >= 1.0:
+
 ```bash
 pip install --upgrade openai
 ```
 
 Then, interact with the Vicuna model:
+
 ```python
 import openai
 
@@ -214,12 +223,17 @@ print(completion.choices[0].message.content)
 ```
 
 ## Setup FastChat in multiple nodes
+
 ### node-01
+
 Start the controller
+
 ```bash
 python3 -m fastchat.serve.controller --host 0.0.0.0 --port 10002
 ```
+
 Start the vLLM model workers
+
 ```bash
 CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.vllm_worker \
         --model-path lmsys/vicuna-13b-v1.5 \
@@ -229,6 +243,7 @@ CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.vllm_worker \
         --port 31000 \
         --worker-address http://$(hostname):31000
 ```
+
 ```bash
 CUDA_VISIBLE_DEVICES=1 python3 -m fastchat.serve.vllm_worker \
         --model-path lmsys/vicuna-13b-v1.5 \
@@ -238,10 +253,13 @@ CUDA_VISIBLE_DEVICES=1 python3 -m fastchat.serve.vllm_worker \
         --port 31001 \
         --worker-address http://$(hostname):31001
 ```
+
 Start Ray Head
+
 ```bash
 CUDA_VISIBLE_DEVICES=2,3 ray start --head
 ```
+
 ```bash
 python3 -m fastchat.serve.vllm_worker \
         --model-path lmsys/vicuna-33b-v1.3 \
@@ -254,6 +272,7 @@ python3 -m fastchat.serve.vllm_worker \
 ```
 
 ### node-02
+
 ```bash
 CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.vllm_worker \
         --model-path meta-llama/Llama-2-13b-chat-hf \
@@ -264,6 +283,7 @@ CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.vllm_worker \
         --worker-address http://$(hostname):31000 \
         --tokenizer meta-llama/Llama-2-7b-chat-hf
 ```
+
 ```bash
 CUDA_VISIBLE_DEVICES=1 python3 -m fastchat.serve.vllm_worker \
         --model-path meta-llama/Llama-2-13b-chat-hf \
@@ -274,6 +294,7 @@ CUDA_VISIBLE_DEVICES=1 python3 -m fastchat.serve.vllm_worker \
         --worker-address http://$(hostname):31001 \
         --tokenizer meta-llama/Llama-2-7b-chat-hf
 ```
+
 ```bash
 CUDA_VISIBLE_DEVICES=2 python3 -m fastchat.serve.vllm_worker \
         --model-path meta-llama/Llama-2-7b-chat-hf \
@@ -284,6 +305,7 @@ CUDA_VISIBLE_DEVICES=2 python3 -m fastchat.serve.vllm_worker \
         --worker-address http://$(hostname):31002 \
         --tokenizer meta-llama/Llama-2-7b-chat-hf
 ```
+
 ```bash
 CUDA_VISIBLE_DEVICES=3 python3 -m fastchat.serve.vllm_worker \
         --model-path WizardLM/WizardLM-13B-V1.1 \
@@ -295,6 +317,7 @@ CUDA_VISIBLE_DEVICES=3 python3 -m fastchat.serve.vllm_worker \
 ```
 
 ### node-03
+
 ```bash
 python3 -m fastchat.serve.vllm_worker \
         --model-path mosaicml/mpt-30b-chat \
@@ -304,6 +327,7 @@ python3 -m fastchat.serve.vllm_worker \
         --worker-address http://$(hostname):31000 \
         --num-gpus 2
 ```
+
 ```bash
 python3 -m fastchat.serve.vllm_worker \
         --model-path timdettmers/guanaco-33b-merged \
@@ -317,6 +341,7 @@ python3 -m fastchat.serve.vllm_worker \
 ```
 
 ### node-04
+
 ```bash
 CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.multi_model_worker \
         --model-path ~/model_weights/RWKV-4-Raven-14B-v12-Eng98%25-Other2%25-20230523-ctx8192.pth \
@@ -329,6 +354,7 @@ CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.multi_model_worker \
         --worker http://$(hostname):31000 \
         --limit 4
 ```
+
 ```bash
 CUDA_VISIBLE_DEVICES=1 python3 -m fastchat.serve.multi_model_worker \
         --model-path OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5 \
@@ -341,6 +367,7 @@ CUDA_VISIBLE_DEVICES=1 python3 -m fastchat.serve.multi_model_worker \
         --worker http://$(hostname):31001 \
         --limit 4
 ```
+
 ```bash
 CUDA_VISIBLE_DEVICES=2 python3 -m fastchat.serve.multi_model_worker \
         --model-path lmsys/vicuna-7b-v1.5 \
@@ -353,6 +380,7 @@ CUDA_VISIBLE_DEVICES=2 python3 -m fastchat.serve.multi_model_worker \
         --worker http://$(hostname):31002 \
         --limit 4
 ```
+
 ```bash
 CUDA_VISIBLE_DEVICES=3 python3 -m fastchat.serve.vllm_worker \
         --model-path ~/model_weights/alpaca-13b  \
@@ -363,6 +391,7 @@ CUDA_VISIBLE_DEVICES=3 python3 -m fastchat.serve.vllm_worker \
 ```
 
 ### Test the deployment
+
 ```bash
 python3 -m fastchat.serve.test_message \
         --model vicuna-13b \
@@ -370,20 +399,22 @@ python3 -m fastchat.serve.test_message \
 ```
 
 ## Conversations
+
 ### Chatbot Arena Conversations
 
 1. Gather battles
+
 ```
 python3 clean_battle_data.py --max-num 10 --mode conv_release
 ```
 
 2. Tag OpenAI moderation
+
 ```
 python3 tag_openai_moderation.py --in clean_battle_conv_20230814.json
 ```
 
 3. Clean PII
-
 4. Filter additional blocked words
 
 ```
@@ -392,15 +423,123 @@ python3 filter_bad_conv.py --in clean_battle_conv_20230630_tagged_v1_pii.json
 
 5. Add additional toxicity tag
 
-
 ### All Conversations
 
 1. Gather chats
+
 ```
 python3 clean_chat_data.py
 ```
 
 2. Sample
+
 ```
 python3 conv_release_scripts/sample.py
+```
+
+## Custom Dataset
+
+### Dataset Format
+
+[Sample Format](https://github.com/lm-sys/FastChat/blob/main/fastchat/llm_judge/data/mt_bench/question.jsonl "sample format")
+
+### Install
+```bash
+git clone https://github.com/lm-sys/FastChat.git
+cd FastChat
+pip install -e ".[model_worker,llm_judge]"
+```
+
+### Review Pre-Generated Model Answers and Judgments
+We provide pre-generated model answers and judgments for some models.
+You can view them at this [demo](https://huggingface.co/spaces/lmsys/mt-bench).
+
+To download the pre-generated data, use
+```
+python3 download_mt_bench_pregenerated.py
+```
+
+After downloading the data, you can view them locally by
+```
+python3 qa_browser.py --share
+```
+You can use this QA browser to view the answers generated by you later.
+
+## MT-Bench
+
+### Evaluate a model on MT-bench
+
+#### Step 1. Generate model answers to MT-bench questions
+```bash
+python gen_model_answer.py --model-path [MODEL-PATH] --model-id [MODEL-ID]
+```
+Arguments:
+  - `[MODEL-PATH]` is the path to the weights, which can be a local folder or a Hugging Face repo ID.
+  - `[MODEL-ID]` is a name you give to the model.
+
+e.g.,
+```bash
+python gen_model_answer.py --model-path lmsys/vicuna-7b-v1.5 --model-id vicuna-7b-v1.5
+```
+The answers will be saved to `data/mt_bench/model_answer/[MODEL-ID].jsonl`.
+
+You can also specify `--num-gpus-per-model` for model parallelism (needed for large 65B models) and `--num-gpus-total` to parallelize answer generation with multiple GPUs.
+
+#### Step 2. Generate GPT-4 judgments
+There are several options to use GPT-4 as a judge, such as pairwise winrate and single-answer grading.
+In MT-bench, we recommend single-answer grading as the default mode.
+This mode asks GPT-4 to grade and give a score to model's answer directly without pairwise comparison.
+For each turn, GPT-4 will give a score on a scale of 10. We then compute the average score on all turns.
+
+```bash
+export OPENAI_API_KEY=XXXXXX  # set the OpenAI API key
+python gen_judgment.py --model-list [LIST-OF-MODEL-ID] --parallel [num-concurrent-api-call]
+```
+
+e.g.,
+```bash
+python gen_judgment.py --model-list vicuna-13b-v1.3 alpaca-13b llama-13b claude-v1 gpt-3.5-turbo gpt-4 --parallel 2
+```
+The judgments will be saved to `data/mt_bench/model_judgment/gpt-4_single.jsonl`
+
+#### Step 3. Show MT-bench scores
+
+- Show the scores for selected models
+  ```bash
+  python show_result.py --model-list vicuna-13b-v1.3 alpaca-13b llama-13b claude-v1 gpt-3.5-turbo gpt-4
+  ```
+- Show all scores
+  ```bash
+  python show_result.py
+  ```
+
+### Other grading options
+Besides score-based single-answer grading, we also support two additional grading options based on win rates:
+- `pariwise-baseline`: run pairwise comparison against a baseline model.
+- `pairwise-all`: run pairwise comparison between all model pairs on all questions.
+
+#### Option 2: pairwise comparison against a baseline (default: gpt-3.5-turbo)
+
+- Generate GPT-4 judgments
+```bash
+python gen_judgment.py --mode pairwise-baseline --model-list vicuna-13b-v1.3 alpaca-13b llama-13b --parallel 2
+```
+The judgments will be saved to `data/mt_bench/model_judgment/gpt-4_pair.jsonl`
+
+- Show results
+```bash
+python show_result.py --mode pairwise-baseline
+```
+
+#### Option 3: Run GPT-4 judge with all pair comparisons
+
+Another option is to run pairwise comparisons on all possible pairs.
+This could be more expensive when #models increases, but it gives you a more comprehensive information.
+
+```bash
+python gen_judgment.py --mode pairwise-all --model-list [LIST-OF-MODEL-ID] --parallel [num-concurrent-api-call]
+```
+
+```bash
+python show_result.py --mode pairwise-all
 ```
