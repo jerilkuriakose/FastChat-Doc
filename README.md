@@ -80,7 +80,7 @@ python3 -m fastchat.serve.cli --model-path lmsys/vicuna-7b-v1.5 --load-8bit
 ```
 
 ## FastChat Server Architecture
-![server arch](../assets/server_arch.png)
+![server arch](assets/server_arch.png)
 
 ## Serving with Web GUI
 
