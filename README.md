@@ -53,7 +53,6 @@ pip3 install -e ".[model_worker,webui]"
 #### Single GPU
 
 The command below requires around 14GB of GPU memory for Vicuna-7B and 28GB of GPU memory for Vicuna-13B.
-See the [&#34;Not Enough Memory&#34; section](#not-enough-memory) below if you do not have enough memory.
 `--model-path` can be a local folder or a Hugging Face repo name.
 
 ```
@@ -211,4 +210,44 @@ completion = openai.chat.completions.create(
 )
 # print the completion
 print(completion.choices[0].message.content)
+```
+
+## Setup FastChat in multiple nodes
+#### node-01
+Start the controller
+```bash
+python3 -m fastchat.serve.controller --host 0.0.0.0 --port 10002
+```
+Start the VLLM model workers
+```bash
+CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.vllm_worker \
+        --model-path lmsys/vicuna-13b-v1.5 \
+        --model-name vicuna-13b \
+        --controller http://node-01:10002 \
+        --host 0.0.0.0 \
+        --port 31000 \
+        --worker-address http://$(hostname):31000
+```
+```bash
+CUDA_VISIBLE_DEVICES=1 python3 -m fastchat.serve.vllm_worker \
+        --model-path lmsys/vicuna-13b-v1.5 \
+        --model-name vicuna-13b \
+        --controller http://node-01:10002 \
+        --host 0.0.0.0 \
+        --port 31001 \
+        --worker-address http://$(hostname):31001
+```
+Start Ray Head
+```bash
+CUDA_VISIBLE_DEVICES=2,3 ray start --head
+```
+```bash
+python3 -m fastchat.serve.vllm_worker \
+        --model-path lmsys/vicuna-33b-v1.3 \
+        --model-name vicuna-33b \
+        --controller http://node-01:10002 \
+        --host 0.0.0.0 \
+        --port 31002 \
+        --worker-address http://$(hostname):31002 \
+        --num-gpus 2
 ```
