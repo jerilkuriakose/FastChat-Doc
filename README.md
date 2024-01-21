@@ -29,32 +29,41 @@ pip3 install "fschat[model_worker,webui]"
 ### Method 2: From source
 
 1. Clone this repository and navigate to the FastChat folder
+
 ```bash
 git clone https://github.com/lm-sys/FastChat.git
 cd FastChat
 ```
 
 If you are running on Mac:
+
 ```bash
 brew install rust cmake
 ```
 
 2. Install Package
+
 ```bash
 pip3 install --upgrade pip  # enable PEP 660 support
 pip3 install -e ".[model_worker,webui]"
 ```
 
+## Simple test to check whether the installation is working fine
+
 #### Single GPU
+
 The command below requires around 14GB of GPU memory for Vicuna-7B and 28GB of GPU memory for Vicuna-13B.
-See the ["Not Enough Memory" section](#not-enough-memory) below if you do not have enough memory.
+See the [&#34;Not Enough Memory&#34; section](#not-enough-memory) below if you do not have enough memory.
 `--model-path` can be a local folder or a Hugging Face repo name.
+
 ```
 python3 -m fastchat.serve.cli --model-path lmsys/vicuna-7b-v1.5
 ```
 
 #### Multiple GPUs
-You can use model parallelism to aggregate GPU memory from multiple GPUs on the same machine. 
+
+You can use model parallelism to aggregate GPU memory from multiple GPUs on the same machine.
+
 ```
 python3 -m fastchat.serve.cli --model-path lmsys/vicuna-7b-v1.5 --num-gpus 2
 ```
@@ -69,6 +78,7 @@ python3 -m fastchat.serve.cli --model-path lmsys/vicuna-7b-v1.5 --num-gpus 2 --m
 ```
 
 #### Not Enough Memory
+
 If you do not have enough memory, you can enable 8-bit compression by adding `--load-8bit` to commands above.
 This can reduce memory usage by around half with slightly degraded model quality.
 It is compatible with the CPU, GPU, and Metal backend.
@@ -80,9 +90,125 @@ python3 -m fastchat.serve.cli --model-path lmsys/vicuna-7b-v1.5 --load-8bit
 ```
 
 ## FastChat Server Architecture
+
 ![server arch](assets/server_arch.png)
 
-## Serving with Web GUI
+## Setup the server in local
 
+### Serving with Web GUI
 
-<a href="https://chat.lmsys.org"><img src="assets/demo_narrow.gif" width="70%"></a>
+Here are the commands to follow in your terminal:
+
+#### Launch the controller
+
+```bash
+python3 -m fastchat.serve.controller
+```
+
+This controller manages the distributed workers.
+
+#### Launch the model worker(s)
+
+```bash
+python3 -m fastchat.serve.model_worker --model-path lmsys/vicuna-7b-v1.5
+```
+
+Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller .
+
+To ensure that your model worker is connected to your controller properly, send a test message using the following command:
+
+```bash
+python3 -m fastchat.serve.test_message --model-name vicuna-7b-v1.5
+```
+
+You will see a short output.
+
+#### Launch the Gradio web server
+
+```bash
+python3 -m fastchat.serve.gradio_web_server
+```
+
+The following will be the output GUI
+`<a href="/"><img src="assets/demo_narrow.gif" width="70%">``</a>`
+
+> The above command will only only open `Single Tab` GUI
+
+#### Launch the Gradio web server for multi tab (battle, arena, etc)
+```bash
+python3 -m fastchat.serve.gradio_web_server_multi
+```
+
+## vLLM Integration
+[vLLM](https://vllm.ai/) can be usedd as an optimized worker implementation in FastChat.
+It offers advanced continuous batching and a much higher (~10x) throughput.
+
+### Instructions
+1. Install vLLM.
+    ```
+    pip install vllm
+    ```
+
+2. When you launch a model worker, replace the normal worker (`fastchat.serve.model_worker`) with the vLLM worker (`fastchat.serve.vllm_worker`). All other commands such as controller, gradio web server, and OpenAI API server are kept the same.
+   ```
+   python3 -m fastchat.serve.vllm_worker --model-path lmsys/vicuna-7b-v1.5
+   ```
+
+   If you see tokenizer errors, try
+   ```
+   python3 -m fastchat.serve.vllm_worker --model-path lmsys/vicuna-7b-v1.5 --tokenizer hf-internal-testing/llama-tokenizer
+   ```
+
+   If you use an AWQ quantized model, try
+   '''
+   python3 -m fastchat.serve.vllm_worker --model-path TheBloke/vicuna-7B-v1.5-AWQ --quantization awq
+   '''
+
+## OpenAI API Server
+First, launch the controller
+
+```bash
+python3 -m fastchat.serve.controller
+```
+
+Then, launch the model worker(s)
+
+```bash
+python3 -m fastchat.serve.model_worker --model-path lmsys/vicuna-7b-v1.5
+```
+
+Finally, launch the RESTful API server
+
+```bash
+python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
+```
+
+### Testing the OpenAI API Server
+First, install OpenAI python package >= 1.0:
+```bash
+pip install --upgrade openai
+```
+
+Then, interact with the Vicuna model:
+```python
+import openai
+
+openai.api_key = "EMPTY"
+openai.base_url = "http://localhost:8000/v1/"
+
+model = "vicuna-7b-v1.5"
+prompt = "Once upon a time"
+
+# create a completion
+completion = openai.completions.create(model=model, prompt=prompt, max_tokens=64)
+# print the completion
+print(prompt + completion.choices[0].text)
+
+# create a chat completion
+completion = openai.chat.completions.create(
+  model=model,
+  messages=[{"role": "user", "content": "Hello! What is your name?"}]
+)
+# print the completion
+print(completion.choices[0].message.content)
+```
