@@ -112,7 +112,7 @@ This controller manages the distributed workers.
 python3 -m fastchat.serve.model_worker --model-path lmsys/vicuna-7b-v1.5
 ```
 
-Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller .
+Wait until the process finishes loading the model and you see `"Uvicorn running on ..."`. The model worker will register itself to the controller .
 
 To ensure that your model worker is connected to your controller properly, send a test message using the following command:
 
@@ -130,7 +130,7 @@ python3 -m fastchat.serve.gradio_web_server
 
 The following will be the output GUI
 
-`<a href="/"><img src="assets/demo_narrow.gif" width="70%">``</a>`
+<a href="/"><img src="assets/demo_narrow.gif" width="70%"></a>
 
 > The above command will only only open `Single Tab` GUI
 
