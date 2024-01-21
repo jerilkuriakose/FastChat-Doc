@@ -315,7 +315,7 @@ python3 -m fastchat.serve.vllm_worker \
         --tokenizer hf-internal-testing/llama-tokenizer
 ```
 
-### node-04a
+### node-04
 ```bash
 CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.multi_model_worker \
         --model-path ~/model_weights/RWKV-4-Raven-14B-v12-Eng98%25-Other2%25-20230523-ctx8192.pth \
@@ -366,4 +366,39 @@ CUDA_VISIBLE_DEVICES=3 python3 -m fastchat.serve.vllm_worker \
 python3 -m fastchat.serve.test_message \
         --model vicuna-13b \
         --controller http://localhost:10002
+```
+
+## Chatbot Arena Conversations
+
+1. Gather battles
+```
+python3 clean_battle_data.py --max-num 10 --mode conv_release
+```
+
+2. Tag OpenAI moderation
+```
+python3 tag_openai_moderation.py --in clean_battle_conv_20230814.json
+```
+
+3. Clean PII
+
+4. Filter additional blocked words
+
+```
+python3 filter_bad_conv.py --in clean_battle_conv_20230630_tagged_v1_pii.json
+```
+
+5. Add additional toxicity tag
+
+
+## All Conversations
+
+1. Gather chats
+```
+python3 clean_chat_data.py
+```
+
+2. Sample
+```
+python3 conv_release_scripts/sample.py
 ```
