@@ -129,7 +129,8 @@ python3 -m fastchat.serve.gradio_web_server
 ```
 
 The following will be the output GUI
-`<a href="/"><img src="assets/demo_narrow.gif" width="70%">``</a>`
+
+<a href="/"><img src="assets/demo_narrow.gif" width="70%"></a>
 
 > The above command will only only open `Single Tab` GUI
 
@@ -139,7 +140,7 @@ python3 -m fastchat.serve.gradio_web_server_multi
 ```
 
 ## vLLM Integration
-[vLLM](https://vllm.ai/) can be usedd as an optimized worker implementation in FastChat.
+[vLLM](https://vllm.ai/) can be used as an optimized worker implementation in FastChat.
 It offers advanced continuous batching and a much higher (~10x) throughput.
 
 ### Instructions
@@ -218,7 +219,7 @@ Start the controller
 ```bash
 python3 -m fastchat.serve.controller --host 0.0.0.0 --port 10002
 ```
-Start the VLLM model workers
+Start the vLLM model workers
 ```bash
 CUDA_VISIBLE_DEVICES=0 python3 -m fastchat.serve.vllm_worker \
         --model-path lmsys/vicuna-13b-v1.5 \
@@ -361,14 +362,15 @@ CUDA_VISIBLE_DEVICES=3 python3 -m fastchat.serve.vllm_worker \
         --worker-address http://$(hostname):31003
 ```
 
-### Test
+### Test the deployment
 ```bash
 python3 -m fastchat.serve.test_message \
         --model vicuna-13b \
         --controller http://localhost:10002
 ```
 
-## Chatbot Arena Conversations
+## Conversations
+### Chatbot Arena Conversations
 
 1. Gather battles
 ```
@@ -391,7 +393,7 @@ python3 filter_bad_conv.py --in clean_battle_conv_20230630_tagged_v1_pii.json
 5. Add additional toxicity tag
 
 
-## All Conversations
+### All Conversations
 
 1. Gather chats
 ```
